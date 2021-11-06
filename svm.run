@@ -1,0 +1,80 @@
+# OTDM Lab 2: run file
+# Marcel, Mengxue
+# Autumn 2021
+
+# To run this file:
+#	$> ampl: include svm.run;
+
+
+reset;
+print "SVM_PRIMAL:";
+
+model svm-primal.mod;
+data "./data/train.dat";
+
+option solver minos;
+#option solver cplex;
+#option solver knitro;
+
+problem SVM_PRIMAL: w, gamma, s, primal, c1, c2;
+solve SVM_PRIMAL;
+display w, gamma, s;
+
+
+
+#reset;
+#print "SVM_DUAL:";
+#model svm-dual.mod;
+#data "./data/train.dat";
+
+#option solver minos;
+
+#problem SVM_DUAL: lambda, dual, c1;
+#solve SVM_DUAL;
+#display lambda;
+
+
+# Compute w from the dual solution
+#param w {1..n};
+#let {j in {1..n}} w[j] := sum{i in {1..m}}lambda[i]*y[i]*A[i,j];
+
+# Retrieving 'intercept' gamma from the dual solution lambda
+# We need to find some lambda[i] that is greater than 0 but different from nu
+#param gamma;
+#param index; #auxiliary index
+# Loop over the lambda vector and set the index
+#for {i in {1..m}} {
+#	if lambda[i] > 0 and lambda[i] != nu then let index := i;
+#}
+#let gamma := 1/y[index] -sum{j in {1..n}}w[j]*A[index,j];
+
+#display w, gamma;
+
+
+###
+# PREDICTIONS
+###
+#param predictions {1..m};
+#let {i in {1..m}} predictions[i] := gamma +sum{j in {1..n}}w[j]*A[i,j];
+#let {i in {1..m}} predictions[i] := if predictions[i] <= 0 then -1 else 1;
+#display predictions;
+
+# We build a confusion matrix
+#param confusion_matrix {1..2,1..2} default 0;
+#for {i in {1..m}} {
+#	if predictions[i] == y[i] and predictions[i] = 1 then
+#		let confusion_matrix[1,1] := confusion_matrix[1,1] +1;
+#	if predictions[i] == y[i] and predictions[i] = -1 then
+#		let confusion_matrix[2,2] := confusion_matrix[2,2] +1;
+#	if predictions[i] != y[i] and predictions[i] = 1 then
+#		let confusion_matrix[1,2] := confusion_matrix[1,2] +1;
+#	if predictions[i] != y[i] and predictions[i] = -1 then
+#		let confusion_matrix[2,1] := confusion_matrix[2,1] +1;
+#}
+
+#printf "Confusion matrix of our classification problem.\n[1,1]:TP, [2,2]:TN, [1,2]:FP, [2,1]:FN \n\n";
+#display confusion_matrix;
+
+#param total_accuracy = (confusion_matrix[1,1] +confusion_matrix[2,2]) / m;
+#display total_accuracy;
+
