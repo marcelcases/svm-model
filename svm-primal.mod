@@ -25,4 +25,3 @@ subject to c1 {i in {1..m}}:
 	-y[i]*(sum{j in {1..n}}(A[i,j]*w[j]) +gamma) -s[i] +1 <= 0;
 subject to c2 {i in {1..m}}:
 	-s[i] <= 0;
-	
