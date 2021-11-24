@@ -6,12 +6,16 @@
 #	$> ampl: include svm.run;
 
 
+#########
+# TRAIN #
+#########
+
 # Solve the primal
 reset;
 print "SVM_PRIMAL:";
 
 model svm-primal.mod;
-data "./data/size30.dat"; #train #size30 #spambase #spambase_lite
+data "./data/size200-seed66407.dat"; #spambase #size200-seed66407
 
 option solver cplex;
 
@@ -24,7 +28,7 @@ display w, gamma, s;
 reset;
 print "SVM_DUAL:";
 model svm-dual.mod;
-data "./data/size30.dat";
+data "./data/size200-seed66407.dat";
 
 option solver cplex;
 
@@ -35,13 +39,14 @@ display lambda;
 
 # Compute w, gamma from the dual solution
 param w {1..n};
-let {j in {1..n}} w[j] := sum{i in {1..m}} lambda[i]*y[i]*A[i,j];
+let {j in {1..n}} w[j] := sum{i in {1..m}} lambda[i]*y_train[i]*A_train[i,j];
 display w;
 
 param gamma;
 for {i in {1..m}} {
-	if lambda[i] > 0.01 and lambda[i] < nu*0.99 then { # We have found a support vector point
-		let gamma := 1/y[i] - sum{j in {1..n}} w[j]*A[i,j];
+	if lambda[i] > 0.01 and lambda[i] < nu*0.99 then {
+		# A support vector point was found
+		let gamma := 1/y_train[i] - sum{j in {1..n}} w[j]*A_train[i,j];
 		break;
 	}
 }
@@ -50,30 +55,24 @@ display gamma;
 
 
 
-###
-# PREDICTIONS
-###
-param predictions {1..m};
-let {i in {1..m}} predictions[i] := gamma +sum{j in {1..n}}w[j]*A[i,j];
-let {i in {1..m}} predictions[i] := if predictions[i] <= 0 then -1 else 1;
-display predictions;
+########
+# TEST #
+########
 
-# We build a confusion matrix
-param confusion_matrix {1..2,1..2} default 0;
+# Predict values with the test dataset
+param y_pred {1..m};
+let {i in {1..m}} y_pred[i] := gamma + sum{j in {1..n}}w[j]*A_test[i,j];
+let {i in {1..m}} y_pred[i] := if y_pred[i] <= 0 then -1 else 1;
+display y_pred;
+
+# Check misclassifications
+param misclassifications default 0;
 for {i in {1..m}} {
-	if predictions[i] == y[i] and predictions[i] = 1 then
-		let confusion_matrix[1,1] := confusion_matrix[1,1] +1;
-	if predictions[i] == y[i] and predictions[i] = -1 then
-		let confusion_matrix[2,2] := confusion_matrix[2,2] +1;
-	if predictions[i] != y[i] and predictions[i] = 1 then
-		let confusion_matrix[1,2] := confusion_matrix[1,2] +1;
-	if predictions[i] != y[i] and predictions[i] = -1 then
-		let confusion_matrix[2,1] := confusion_matrix[2,1] +1;
+	if y_pred[i] != y_test[i] then
+		let misclassifications := misclassifications + 1;
 }
 
-printf "Confusion matrix of our classification problem.\n[1,1]:TP, [2,2]:TN, [1,2]:FP, [2,1]:FN \n\n";
-display confusion_matrix;
+display misclassifications;
 
-param total_accuracy = (confusion_matrix[1,1] +confusion_matrix[2,2]) / m;
-display total_accuracy;
-
+param accuracy = (m - misclassifications) / m;
+display accuracy;
