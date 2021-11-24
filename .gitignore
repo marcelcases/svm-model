@@ -1,3 +1,7 @@
 *.pdf
+*.docx
+*.xlsx
+*.zip
 gensvmdat*
 old/
+task_statement.txt
