@@ -15,9 +15,9 @@ reset;
 print "SVM_PRIMAL:";
 
 model svm-primal.mod;
-data "./data/size200-seed66407.dat"; #spambase #size200-seed66407
+data "./data/size1000-seed75421.dat"; #spambase #size100-seed66407 #size1000-seed75421
 
-option solver cplex;
+option solver cplex; #gurobi
 
 problem SVM_PRIMAL: w, gamma, s, primal, c1, c2;
 solve SVM_PRIMAL;
@@ -28,7 +28,7 @@ display w, gamma, s;
 reset;
 print "SVM_DUAL:";
 model svm-dual.mod;
-data "./data/size200-seed66407.dat";
+data "./data/size1000-seed75421.dat";
 
 option solver cplex;
 
