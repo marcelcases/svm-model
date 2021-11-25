@@ -17,7 +17,7 @@ November 2021
 
 ## Introduction
 
-The goal of this laboratory assignment is to model the primal and dual formulations of a Support Vector Machine using AMPL. To test the models, a training set of 100 random samples is generated, and then it is tested with a test set of another 100 samples. Furthermore, the models are tested with a real dataset of spam classification. The results are analysed and discussed.
+The goal of this laboratory assignment is to model the primal and dual formulations of a Support Vector Machine using AMPL. To test the models, a training set of 1000 random samples is generated, and then it is tested with a test set of another 1000 samples. Furthermore, the models are tested with a real dataset of spam classification. The results are analysed and discussed.
 
 ## Models
 
@@ -113,9 +113,9 @@ reset;
 print "SVM_PRIMAL:";
 
 model svm-primal.mod;
-data "./data/spambase.dat"; #spambase #size200-seed66407
+data "./data/spambase.dat"; #spambase #size100-seed66407 #size1000-seed75421
 
-option solver cplex;
+option solver cplex; #gurobi
 
 problem SVM_PRIMAL: w, gamma, s, primal, c1, c2;
 solve SVM_PRIMAL;
@@ -185,11 +185,11 @@ display accuracy;
 
 ### gensvmdat
 
-The first dataset is generated with the tool `gensvmdat`. For this, 200 pseudo-random samples were generated with the seed 66407. It contains just 4 features. This generator randomly introduces errors on the data. These samples were re-arranged in a way that is readable by the AMPL interpreter. The samples were split as follows: 100 for training the models (*y_train*) and 100 for testing them (*A_train*). It is named `size200-seed66407.dat`.
+The first dataset is generated with the tool `gensvmdat`. For this, 2000 pseudo-random samples were generated with the seed 75421. It contains just 4 features and a response value, which is +1 if the sum of the four features is greater than 2; -1 otherwise. This generator randomly introduces errors on the data. These samples were re-arranged in a way that is readable by the AMPL interpreter. The samples were split as follows: 1000 for training the models (*A_train* and *y_train*) and 1000 for testing them (*A_test* and *y_test*). The file is named `size1000-seed75421.dat`.
 
-### spambase
+### Spam Base
 
-The second dataset is a real dataset. It is called `spambase.dat` and contains information for identifying and classifying spam. It contains 575 samples for training, 575 more for testing, and has 57 features. The feature values (*A_test*) contain information such as the average length of uninterrupted sequences of capital letters or word frequency and repetition contained in emails. The response value (*y_test*) denotes whether the e-mail was considered spam (1) or not (0). The dataset was re-arranged to fit the requirements of the AMPL model.
+The second dataset is a real dataset. It is called `spambase.dat` and contains information for identifying and classifying spam. It contains 575 samples for training, 575 more for testing, and has 57 features. The feature values (*A_train* and *A_test*) contain information such as the average length of uninterrupted sequences of capital letters or word frequency and repetition contained in emails. The response value (*y_train* and *y_test*) denote whether the e-mail was considered spam (1) or not (0). The dataset was re-arranged to fit the requirements of the AMPL model.
 
 ## Results and analysis
 
@@ -201,55 +201,54 @@ To run the whole training and test process, we call:
 
 ### gensvmdat
 
-A value of ν = 0.9 minimizes misclassifications, with the results below:
+After some tests, we found that a value of ν = 5.7 offers a good tradeoff between misclassifications and the margin of the hyperplane, with the results below:
 
 ````
 SVM_PRIMAL:
-CPLEX 20.1.0.0: optimal solution; objective 41.84966155
-10 separable QP barrier iterations
+CPLEX 20.1.0.0: optimal solution; objective 1731.80453
+12 separable QP barrier iterations
 No basis.
 w [*] :=
-1  1.54423
-2  2.35792
-3  2.43953
-4  2.11019
+1  4.54128
+2  4.73366
+3  5.33484
+4  4.95617
 ;
 
-gamma = -4.15454
+gamma = -9.71265
 
 s [*] :=
-  ... (100 results hidden)
+   ... (1000 results hidden);
 ;
 
 SVM_DUAL:
-CPLEX 20.1.0.0: optimal solution; objective 41.8496615
-11 QP barrier iterations
+CPLEX 20.1.0.0: optimal solution; objective 1731.804529
+25 QP barrier iterations
 No basis.
 lambda [*] :=
-  ... (100 results hidden)
-;
+   ... (1000 results hidden);
 
 w [*] :=
-1  1.54423
-2  2.35792
-3  2.43953
-4  2.11019
+1  4.54128
+2  4.73366
+3  5.33484
+4  4.95617
 ;
 
-gamma = -4.15454
+gamma = -9.71265
 
 y_pred [*] :=
-  ... (100 results hidden)
+   ... (1000 results hidden)
 ;
 
-misclassifications = 15
+misclassifications = 74
 
-accuracy = 0.85
+accuracy = 0.926
 ````
 
-This value of the accuracy is what we would expect from this dataset, which contains randomly generated errors in it.
+This value of the accuracy is what we would expect from this dataset, which was trained and tested with randomly generated errors in some of the response values.
 
-### spambase
+### Spam Base
 
 A value of ν = 2.7 minimizes misclassifications, with the results below:
 
@@ -319,13 +318,13 @@ misclassifications = 40
 accuracy = 0.930435
 ````
 
-The accuracy for this dataset is acceptable. The high dimensionality of this dataset (57) allows the hyperplane to be more optimal than in cases with reduced dimensionality.
+The accuracy for this dataset is acceptable. The high dimensionality of this dataset (R<sup>57</sup>) allows the hyperplane to be more optimal than in cases with reduced dimensionality.
 
 The number of iterations needed for computing the dual solution (19) is lower than the iterations needed for the primal (22).
 
 ## Conclusions
 
-The tests performed show that both the dual and the primal versions of the SVM converge to the same results. The separation hyperplane calculated from the dual model is always the same hyperplane as in the primal model. For larger datasets, the dual problem is usually faster than the primal.
+The tests performed show that both the dual and the primal versions of the SVM converge to the same results. The separation hyperplane calculated from the dual model is always the same hyperplane as in the primal model. We can use the most convenient version depending on the dataset. For larger datasets, the dual problem is usually faster than the primal.
 
 
 ## References
