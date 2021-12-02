@@ -17,7 +17,7 @@ November 2021
 
 ## Introduction
 
-The goal of this laboratory assignment is to model the primal and dual formulations of a Support Vector Machine using AMPL. To test the models, a training set of 1000 random samples is generated, and then it is tested with a test set of another 1000 samples. Furthermore, the models are tested with a real dataset of spam classification. The results are analysed and discussed.
+The goal of this laboratory assignment is to model the primal and dual formulations of a Support Vector Machine using AMPL. To test the models, a training set of 1000 random samples is generated, and then it is tested with a test set of another different 1000 samples. Furthermore, the models are tested with a real dataset of spam classification. The results are analysed and discussed.
 
 ## Models
 
@@ -113,7 +113,7 @@ reset;
 print "SVM_PRIMAL:";
 
 model svm-primal.mod;
-data "./data/spambase.dat"; #spambase #size100-seed66407 #size1000-seed75421
+data "./data/spambase.dat"; #spambase #size100-seed66407 #size2000-seed75421
 
 option solver cplex; #gurobi
 
@@ -185,11 +185,14 @@ display accuracy;
 
 ### gensvmdat
 
-The first dataset is generated with the tool `gensvmdat`. For this, 2000 pseudo-random samples were generated with the seed 75421. It contains just 4 features and a response value, which is +1 if the sum of the four features is greater than 2; -1 otherwise. This generator randomly introduces errors on the data. These samples were re-arranged in a way that is readable by the AMPL interpreter. The samples were split as follows: 1000 for training the models (*A_train* and *y_train*) and 1000 for testing them (*A_test* and *y_test*). The file is named `size1000-seed75421.dat`.
+The first dataset is generated with the tool `gensvmdat`. For this, 2000 pseudo-random samples were generated with the seed 75421. It contains just 4 features and a response value, which is +1 if the sum of the four features is greater than 2; -1 otherwise. This generator randomly introduces errors on the data. These samples were re-arranged in a way that is readable by the AMPL interpreter. The samples were split as follows: 1000 for training the models (*A_train* and *y_train*) and 1000 for testing them (*A_test* and *y_test*). The file is named `size2000-seed75421.dat`.
 
 ### Spam Base
 
-The second dataset is a real dataset. It is called `spambase.dat` and contains information for identifying and classifying spam. It contains 575 samples for training, 575 more for testing, and has 57 features. The feature values (*A_train* and *A_test*) contain information such as the average length of uninterrupted sequences of capital letters or word frequency and repetition contained in emails. The response value (*y_train* and *y_test*) denote whether the e-mail was considered spam (1) or not (0). The dataset was re-arranged to fit the requirements of the AMPL model.
+The second dataset is a real dataset. It is called `spambase.dat` and contains information for identifying spam. It contains 575 samples for training, 575 more for testing, and has 57 features. The feature values (*A_train* and *A_test*) contain information such as the average length of uninterrupted sequences of capital letters, or word frequency and repetition contained in emails. The response values (*y_train* and *y_test*) denote whether the e-mail was considered spam (1) or not (-1). 
+
+
+The source of the dataset is [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets/Spambase). The dataset was re-arranged to fit the requirements of the AMPL model, and was reduced from 4601 samples to 1150, chosen uniformly at random, for easing the computation.
 
 ## Results and analysis
 
